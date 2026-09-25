@@ -1,0 +1,393 @@
+---
+import Base from '../layouts/Base.astro';
+import { formatoPrecio, tienda } from '../data/tienda';
+
+const { envio, retiro } = tienda.entrega;
+const { mercadoPago, transferencia } = tienda.pago;
+const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
+---
+
+<Base titulo="Finalizar compra" sinIndexar>
+  <div class="contenedor checkout">
+    <h1>Finalizar compra</h1>
+
+    <div class="aviso aviso--error" data-error-pago hidden>El pago no se completó. Podés intentarlo de nuevo o elegir transferencia.</div>
+
+    <div class="vacio" data-vacio hidden>
+      <p>Tu carrito está vacío.</p>
+      <a href="/#cuadernos" class="boton">Ver cuadernos</a>
+    </div>
+
+    <div class="checkout__grilla" data-contenido hidden>
+      <form class="formulario" data-form novalidate>
+        <fieldset>
+          <legend>Tus datos</legend>
+          <div class="campo">
+            <label for="nombre">Nombre y apellido</label>
+            <input id="nombre" name="nombre" type="text" autocomplete="name" required maxlength="80" />
+          </div>
+          <div class="dos">
+            <div class="campo">
+              <label for="email">Mail</label>
+              <input id="email" name="email" type="email" autocomplete="email" required maxlength="120" />
+            </div>
+            <div class="campo">
+              <label for="telefono">Teléfono / WhatsApp</label>
+              <input id="telefono" name="telefono" type="tel" autocomplete="tel" required maxlength="30" placeholder="11 2345 6789" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Entrega</legend>
+          <label class="opcion">
+            <input type="radio" name="entrega" value="envio" checked />
+            <strong>{envio.titulo}</strong>
+            <span>{envio.costo === null ? 'A coordinar' : formatoPrecio(envio.costo)}</span>
+            <p>{envio.costo === null ? envio.textoSinCosto : envio.texto}</p>
+          </label>
+          <label class="opcion">
+            <input type="radio" name="entrega" value="retiro" />
+            <strong>{retiro.titulo}</strong>
+            <span>Sin cargo</span>
+            <p>{retiro.texto}</p>
+          </label>
+
+          <div class="direccion" data-direccion>
+            <div class="campo">
+              <label for="calle">Calle, número, piso y depto.</label>
+              <input id="calle" name="calle" type="text" autocomplete="street-address" required maxlength="120" />
+            </div>
+            <div class="tres">
+              <div class="campo">
+                <label for="ciudad">Localidad</label>
+                <input id="ciudad" name="ciudad" type="text" autocomplete="address-level2" required maxlength="80" />
+              </div>
+              <div class="campo">
+                <label for="provincia">Provincia</label>
+                <input id="provincia" name="provincia" type="text" autocomplete="address-level1" required maxlength="60" />
+              </div>
+              <div class="campo">
+                <label for="cp">Código postal</label>
+                <input id="cp" name="cp" type="text" autocomplete="postal-code" inputmode="numeric" required maxlength="10" />
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Pago</legend>
+          {
+            mercadoPago.activo && (
+              <label class="opcion">
+                <input type="radio" name="pago" value="mercadopago" checked={pagoInicial === 'mercadopago'} />
+                <strong>{mercadoPago.titulo}</strong>
+                <span />
+                <p>{mercadoPago.texto}</p>
+              </label>
+            )
+          }
+          {
+            transferencia.activo && (
+              <label class="opcion">
+                <input type="radio" name="pago" value="transferencia" checked={pagoInicial === 'transferencia'} />
+                <strong>{transferencia.titulo}</strong>
+                <span />
+                <p>{transferencia.texto}</p>
+              </label>
+            )
+          }
+        </fieldset>
+
+        <div class="campo">
+          <label for="comentario">Comentarios <span class="opcional">(opcional)</span></label>
+          <textarea id="comentario" name="comentario" maxlength="500" placeholder="Algo que tengamos que saber sobre tu pedido"></textarea>
+        </div>
+
+        <!-- Campo trampa para bots: las personas no lo ven -->
+        <div class="trampa" aria-hidden="true">
+          <label>No completar <input type="text" name="web" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <div class="aviso aviso--error" data-error role="alert" hidden></div>
+        <button type="submit" class="boton boton--ancho" data-enviar>Continuar</button>
+      </form>
+
+      <aside class="resumen">
+        <h2>Tu pedido</h2>
+        <div data-lineas></div>
+        <dl>
+          <div><dt>Subtotal</dt><dd data-subtotal></dd></div>
+          <div><dt>Envío</dt><dd data-envio></dd></div>
+          <div class="resumen__total"><dt>Total</dt><dd data-total></dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="listo" data-listo hidden>
+      <span class="antetitulo">Pedido <span data-listo-id></span></span>
+      <h2>¡Gracias! Ya recibimos tu pedido.</h2>
+      <p>Para confirmarlo, transferí <strong data-listo-total></strong> dentro de las próximas {transferencia.plazoHoras} horas:</p>
+      <dl class="datos-transferencia">
+        <div><dt>Alias</dt><dd>{transferencia.alias}</dd></div>
+        {transferencia.cbu && <div><dt>CBU</dt><dd>{transferencia.cbu}</dd></div>}
+        <div><dt>Titular</dt><dd>{transferencia.titular}</dd></div>
+      </dl>
+      <p>Te mandamos estos datos por mail. Respondé ese mail con el comprobante y empezamos a preparar tu pedido.</p>
+      <a href="/" class="boton boton--claro">Volver al inicio</a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .checkout {
+    padding-block: 32px clamp(64px, 10vw, 120px);
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 32px;
+  }
+  .checkout > .aviso {
+    margin-bottom: 24px;
+  }
+  .checkout__grilla {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .checkout__grilla {
+      grid-template-columns: 1fr;
+    }
+    .resumen {
+      order: -1;
+    }
+  }
+  [hidden] {
+    display: none !important;
+  }
+  .formulario {
+    display: grid;
+    gap: 36px;
+  }
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+  }
+  legend {
+    font: 400 1.45rem/1.2 var(--serif);
+    margin-bottom: 14px;
+    padding: 0;
+  }
+  .dos,
+  .tres {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .tres {
+    grid-template-columns: 1.3fr 1.3fr 1fr;
+  }
+  @media (max-width: 560px) {
+    .dos,
+    .tres {
+      grid-template-columns: 1fr;
+    }
+  }
+  .direccion {
+    display: grid;
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .opcional {
+    color: var(--tinta-suave);
+    font-weight: 400;
+  }
+  .trampa {
+    position: absolute;
+    left: -9999px;
+  }
+  .campo :global(input[aria-invalid='true']) {
+    border-color: var(--error);
+  }
+
+  .resumen {
+    position: sticky;
+    top: 88px;
+    padding: 24px;
+    border-radius: var(--radio);
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+  }
+  @media (max-width: 860px) {
+    .resumen {
+      position: static;
+    }
+  }
+  .resumen h2 {
+    font-size: 1.45rem;
+    margin-bottom: 6px;
+  }
+  dl {
+    margin: 12px 0 0;
+    display: grid;
+    gap: 8px;
+  }
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  dt {
+    color: var(--tinta-suave);
+  }
+  dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .resumen__total {
+    padding-top: 12px;
+    margin-top: 4px;
+    border-top: 1px solid var(--linea);
+    font-size: 1.15rem;
+  }
+  .resumen__total dt {
+    color: var(--tinta);
+  }
+
+  .vacio,
+  .listo {
+    max-width: 560px;
+  }
+  .listo h2 {
+    margin-bottom: 20px;
+  }
+  .datos-transferencia {
+    margin: 0 0 24px;
+    padding: 20px 22px;
+    border-radius: var(--radio);
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+  }
+  .datos-transferencia dd {
+    font-weight: 600;
+    user-select: all;
+  }
+</style>
+
+<script>
+  import { formatoPrecio, productoPorId } from '../data/tienda';
+  import { leer, miniatura, resumen, vaciar, alCambiar } from '../scripts/carrito';
+  import { lineaCarritoHTML } from '../scripts/lineas';
+  import type { MetodoEntrega } from '../lib/pedido';
+
+  const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const form = $<HTMLFormElement>('[data-form]');
+  const direccion = $('[data-direccion]');
+  const error = $('[data-error]');
+  const enviar = $<HTMLButtonElement>('[data-enviar]');
+  let enviado = false;
+
+  if (new URLSearchParams(location.search).get('error') === 'pago') $('[data-error-pago]').hidden = false;
+
+  const entrega = () => (new FormData(form).get('entrega') as MetodoEntrega) ?? 'envio';
+  const pago = () => new FormData(form).get('pago') as string;
+
+  function dibujar() {
+    if (enviado) return;
+    const r = resumen(entrega());
+    $('[data-vacio]').hidden = !!r;
+    $('[data-contenido]').hidden = !r;
+    if (!r) return;
+    $('[data-lineas]').innerHTML = r.lineas.map((l) => lineaCarritoHTML(l, miniatura(l.producto), productoPorId(l.producto)?.nombre ?? '')).join('');
+    $('[data-subtotal]').textContent = formatoPrecio(r.subtotal);
+    $('[data-envio]').textContent = entrega() === 'retiro' ? 'Sin cargo' : r.envio === null ? 'A coordinar' : formatoPrecio(r.envio);
+    $('[data-total]').textContent = formatoPrecio(r.total);
+
+    const conEnvio = entrega() === 'envio';
+    direccion.hidden = !conEnvio;
+    direccion.querySelectorAll('input').forEach((i) => (i.required = conEnvio));
+    enviar.textContent = pago() === 'mercadopago' ? `Pagar ${formatoPrecio(r.total)} con Mercado Pago` : 'Confirmar pedido';
+  }
+
+  function mostrarError(msg: string) {
+    error.textContent = msg;
+    error.hidden = false;
+  }
+
+  function validar(): boolean {
+    let primero: HTMLInputElement | null = null;
+    form.querySelectorAll<HTMLInputElement>('input[required]').forEach((i) => {
+      const mal = !i.value.trim() || (i.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(i.value.trim()));
+      i.setAttribute('aria-invalid', String(mal));
+      if (mal && !primero) primero = i;
+    });
+    if (primero) {
+      mostrarError('Revisá los campos marcados.');
+      (primero as HTMLInputElement).focus();
+      return false;
+    }
+    return true;
+  }
+
+  form.addEventListener('change', dibujar);
+  form.addEventListener('input', (e) => {
+    (e.target as HTMLElement).removeAttribute('aria-invalid');
+    if (!form.querySelector('[aria-invalid="true"]')) error.hidden = true;
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    error.hidden = true;
+    if (!validar()) return;
+
+    const d = new FormData(form);
+    const s = (k: string) => String(d.get(k) ?? '').trim();
+    const cuerpo = {
+      items: leer(),
+      cliente: { nombre: s('nombre'), email: s('email'), telefono: s('telefono') },
+      entrega: {
+        metodo: entrega(),
+        direccion: entrega() === 'envio' ? { calle: s('calle'), ciudad: s('ciudad'), provincia: s('provincia'), cp: s('cp') } : undefined,
+      },
+      pago: pago(),
+      comentario: s('comentario'),
+      web: s('web'),
+    };
+
+    const textoBoton = enviar.textContent;
+    enviar.disabled = true;
+    enviar.textContent = 'Enviando…';
+    try {
+      const r = await fetch('/api/pedido', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(res.error || 'No pudimos enviar el pedido. Probá de nuevo.');
+
+      if (res.redirigir) {
+        location.href = res.redirigir; // a Mercado Pago
+        return;
+      }
+      enviado = true;
+      vaciar();
+      $('[data-listo-id]').textContent = res.id;
+      $('[data-listo-total]').textContent = formatoPrecio(res.total);
+      $('[data-contenido]').hidden = true;
+      $('h1').hidden = true;
+      $('[data-listo]').hidden = false;
+      window.scrollTo({ top: 0 });
+    } catch (err) {
+      mostrarError(err instanceof Error && err.message !== 'Failed to fetch' ? err.message : 'No pudimos conectarnos. Revisá tu conexión y probá de nuevo.');
+      enviar.disabled = false;
+      enviar.textContent = textoBoton;
+    }
+  });
+
+  alCambiar(dibujar);
+  dibujar();
+</script>

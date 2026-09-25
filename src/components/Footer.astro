@@ -1,0 +1,73 @@
+---
+import { tienda } from '../data/tienda';
+const { instagram, whatsapp, email } = tienda.contacto;
+---
+
+<footer class="footer">
+  <div class="contenedor footer__fila">
+    <div>
+      <p class="footer__marca">chita<span>.</span>cuadernos</p>
+      <p class="footer__texto">Cuadernos de cuero hechos a mano en Don Torcuato, Buenos Aires.</p>
+    </div>
+    <ul>
+      {instagram && (
+        <li>
+          <a href={`https://www.instagram.com/${instagram}/`} target="_blank" rel="noopener">Instagram @{instagram}</a>
+        </li>
+      )}
+      {whatsapp && (
+        <li>
+          <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
+        </li>
+      )}
+      {email && (
+        <li>
+          <a href={`mailto:${email}`}>{email}</a>
+        </li>
+      )}
+    </ul>
+  </div>
+  <div class="contenedor footer__legal">© {new Date().getFullYear()} {tienda.nombreCompleto}</div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--tinta);
+    color: #e9e0d3;
+    padding-block: 56px 28px;
+  }
+  .footer__fila {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 32px;
+  }
+  .footer__marca {
+    font: 400 1.7rem/1 var(--serif);
+    margin-bottom: 12px;
+  }
+  .footer__marca span {
+    color: #c98a6c;
+  }
+  .footer__texto {
+    color: #b7a998;
+    max-width: 34ch;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  a:hover {
+    color: #fff;
+  }
+  .footer__legal {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #4a3c33;
+    color: #8f8173;
+    font-size: 0.82rem;
+  }
+</style>

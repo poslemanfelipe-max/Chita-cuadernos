@@ -1,0 +1,363 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import { formatoPrecio, productos, tienda, type Producto } from '../../data/tienda';
+import { fotosDeProducto } from '../../lib/fotos';
+
+export function getStaticPaths() {
+  return productos.map((p) => ({ params: { id: p.id }, props: { p } }));
+}
+
+const { p } = Astro.props as { p: Producto };
+const fotos = fotosDeProducto(p.carpetaFotos);
+const v0 = p.variantes[0];
+const otros = productos.filter((o) => o.id !== p.id);
+---
+
+<Base titulo={p.nombre} descripcion={p.descripcion[0]}>
+  <div class="contenedor ficha">
+    <nav class="migas" aria-label="Ruta"><a href="/#cuadernos">Cuadernos</a> / {p.nombre}</nav>
+
+    <div class="ficha__grilla">
+      <div class="galeria" data-galeria>
+        <div class="galeria__principal">
+          {
+            fotos.map((f, i) => (
+              <Image
+                src={f}
+                alt={`${p.nombre} — foto ${i + 1}`}
+                widths={[480, 720, 960, 1200]}
+                sizes="(max-width: 860px) 100vw, 55vw"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                data-foto={i}
+                hidden={i !== 0}
+              />
+            ))
+          }
+        </div>
+        {
+          fotos.length > 1 && (
+            <div class="galeria__miniaturas">
+              {fotos.map((f, i) => (
+                <button type="button" data-ver={i} aria-label={`Ver foto ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'}>
+                  <Image src={f} alt="" width={120} height={150} fit="cover" />
+                </button>
+              ))}
+            </div>
+          )
+        }
+      </div>
+
+      <div class="ficha__info">
+        <h1>{p.nombre}</h1>
+        <p class="ficha__precio" data-precio>{formatoPrecio(v0.precio)}</p>
+        {p.descripcion.map((d) => <p class="ficha__desc">{d}</p>)}
+        <ul class="ficha__detalles">
+          {p.detalles.map((d) => <li>{d}</li>)}
+        </ul>
+
+        <form class="compra" data-compra data-producto={p.id} novalidate>
+          {
+            p.variantes.length > 1 && (
+              <fieldset>
+                <legend class="etiqueta">Tamaño</legend>
+                <div class="pastillas">
+                  {p.variantes.map((v, i) => (
+                    <label class="pastilla">
+                      <input type="radio" name="variante" value={v.id} data-precio={v.precio} checked={i === 0} />
+                      <span>{v.nombre}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )
+          }
+          {p.variantes.length === 1 && <input type="hidden" name="variante" value={v0.id} data-precio={v0.precio} />}
+
+          {
+            p.colores.length > 0 && (
+              <fieldset>
+                <legend class="etiqueta">Color</legend>
+                <div class="pastillas">
+                  {p.colores.map((c, i) => (
+                    <label class="pastilla">
+                      <input type="radio" name="color" value={c} checked={i === 0} />
+                      <span>{c}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )
+          }
+
+          {
+            p.grabado && (
+              <div class="campo">
+                <label for="grabado">
+                  Grabado personalizado <span class="opcional">(opcional{tienda.grabado.precio > 0 ? ` · +${formatoPrecio(tienda.grabado.precio)}` : ''})</span>
+                </label>
+                <input type="text" id="grabado" name="grabado" maxlength={tienda.grabado.maxCaracteres} autocomplete="off" placeholder="Ej: Martina" />
+                <small>{tienda.grabado.ayuda} Hasta {tienda.grabado.maxCaracteres} caracteres.</small>
+              </div>
+            )
+          }
+
+          <div class="compra__fila">
+            <div class="cantidad" role="group" aria-label="Cantidad">
+              <button type="button" data-menos aria-label="Uno menos">−</button>
+              <output name="cantidad" data-cantidad>1</output>
+              <button type="button" data-mas aria-label="Uno más">+</button>
+            </div>
+            <button type="submit" class="boton compra__boton">Agregar al carrito</button>
+          </div>
+          <p class="compra__ok" data-ok role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="ficha__entrega">
+          <p><strong>{tienda.entrega.envio.titulo}.</strong> {tienda.entrega.envio.texto}</p>
+          <p><strong>{tienda.entrega.retiro.titulo}.</strong> {tienda.entrega.retiro.texto}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="seccion otros">
+    <div class="contenedor">
+      <h2>También te puede gustar</h2>
+      <ul>
+        {
+          otros.map((o) => {
+            const f = fotosDeProducto(o.carpetaFotos)[0];
+            return (
+              <li>
+                <a href={`/cuadernos/${o.id}`}>
+                  {f && <Image src={f} alt={o.nombre} width={480} height={600} fit="cover" />}
+                  <span>{o.nombre}</span>
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .ficha {
+    padding-block: 20px clamp(48px, 8vw, 96px);
+  }
+  .migas {
+    font-size: 0.85rem;
+    color: var(--tinta-suave);
+    margin-bottom: 20px;
+  }
+  .ficha__grilla {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(28px, 5vw, 72px);
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .ficha__grilla {
+      grid-template-columns: 1fr;
+    }
+  }
+  .galeria {
+    position: sticky;
+    top: 88px;
+  }
+  @media (max-width: 860px) {
+    .galeria {
+      position: static;
+    }
+  }
+  .galeria__principal :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 6px;
+    background: var(--papel-2);
+  }
+  .galeria__principal :global(img[hidden]) {
+    display: none;
+  }
+  .galeria__miniaturas {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .galeria__miniaturas button {
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+    width: 72px;
+  }
+  .galeria__miniaturas button[aria-pressed='true'] {
+    border-color: var(--tinta);
+  }
+  .galeria__miniaturas :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  .ficha__info h1 {
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+  }
+  .ficha__precio {
+    font-size: 1.35rem;
+    margin: 10px 0 24px;
+  }
+  .ficha__desc {
+    color: var(--tinta-suave);
+  }
+  .ficha__detalles {
+    margin: 20px 0 32px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    font-size: 0.95rem;
+  }
+  .ficha__detalles li::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 12px;
+    border-radius: 999px;
+    background: var(--cuero);
+    vertical-align: middle;
+  }
+
+  .compra {
+    display: grid;
+    gap: 22px;
+    padding-top: 28px;
+    border-top: 1px solid var(--linea);
+  }
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .opcional {
+    color: var(--tinta-suave);
+    font-weight: 400;
+  }
+  .compra__fila {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .compra__fila .cantidad {
+    min-height: 50px;
+  }
+  .compra__boton {
+    flex: 1;
+  }
+  .compra__ok {
+    margin: -8px 0 0;
+    min-height: 1.4em;
+    color: var(--ok);
+    font-size: 0.9rem;
+  }
+  .ficha__entrega {
+    margin-top: 12px;
+    padding: 18px 20px;
+    border-radius: var(--radio);
+    background: var(--papel-2);
+    font-size: 0.9rem;
+    color: var(--tinta-suave);
+  }
+  .ficha__entrega strong {
+    color: var(--tinta);
+    font-weight: 500;
+  }
+  .ficha__entrega p:last-child {
+    margin: 0;
+  }
+
+  .otros {
+    background: var(--papel-2);
+  }
+  .otros h2 {
+    margin-bottom: 32px;
+  }
+  .otros ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 320px));
+    gap: 24px;
+  }
+  .otros a {
+    text-decoration: none;
+    display: grid;
+    gap: 12px;
+    font: 400 1.25rem/1.2 var(--serif);
+  }
+  .otros :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+</style>
+
+<script>
+  import { formatoPrecio } from '../../data/tienda';
+  import { MAX_POR_LINEA } from '../../lib/pedido';
+  import { agregar } from '../../scripts/carrito';
+
+  // Galería
+  document.querySelectorAll<HTMLElement>('[data-galeria]').forEach((g) => {
+    g.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-ver]');
+      if (!b) return;
+      g.querySelectorAll<HTMLElement>('[data-foto]').forEach((img) => (img.hidden = img.dataset.foto !== b.dataset.ver));
+      g.querySelectorAll('[data-ver]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    });
+  });
+
+  // Compra
+  const form = document.querySelector<HTMLFormElement>('[data-compra]')!;
+  const precio = document.querySelector<HTMLElement>('[data-precio]')!;
+  const cantidad = form.querySelector<HTMLOutputElement>('[data-cantidad]')!;
+  const ok = form.querySelector<HTMLElement>('[data-ok]')!;
+  let n = 1;
+
+  const varianteElegida = () =>
+    form.querySelector<HTMLInputElement>('input[name="variante"]:checked') ?? form.querySelector<HTMLInputElement>('input[name="variante"]')!;
+
+  form.addEventListener('change', () => {
+    precio.textContent = formatoPrecio(Number(varianteElegida().dataset.precio));
+  });
+  form.querySelector('[data-menos]')!.addEventListener('click', () => (cantidad.value = String((n = Math.max(1, n - 1)))));
+  form.querySelector('[data-mas]')!.addEventListener('click', () => (cantidad.value = String((n = Math.min(MAX_POR_LINEA, n + 1)))));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const datos = new FormData(form);
+    agregar({
+      producto: form.dataset.producto!,
+      variante: varianteElegida().value,
+      color: (datos.get('color') as string) || undefined,
+      grabado: ((datos.get('grabado') as string) || '').trim() || undefined,
+      cantidad: n,
+    });
+    ok.textContent = '¡Listo! Lo sumamos a tu carrito.';
+    document.dispatchEvent(new CustomEvent('carrito:abrir'));
+    form.reset();
+    n = 1;
+    cantidad.value = '1';
+    precio.textContent = formatoPrecio(Number(varianteElegida().dataset.precio));
+  });
+</script>

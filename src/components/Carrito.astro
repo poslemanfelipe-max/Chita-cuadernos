@@ -1,0 +1,182 @@
+---
+import { tienda } from '../data/tienda';
+---
+
+<div class="carrito" data-carrito hidden>
+  <div class="carrito__fondo" data-cerrar-carrito></div>
+  <aside class="carrito__panel" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo" tabindex="-1">
+    <div class="carrito__cabeza">
+      <h2 id="carrito-titulo">Tu carrito</h2>
+      <button type="button" class="carrito__cerrar" data-cerrar-carrito aria-label="Cerrar carrito">✕</button>
+    </div>
+    <div class="carrito__cuerpo" data-lista></div>
+    <div class="carrito__pie" data-pie>
+      <div class="carrito__total"><span>Subtotal</span><strong data-subtotal></strong></div>
+      <p class="carrito__nota">
+        {tienda.entrega.envio.costo === null ? 'El envío se coordina después de la compra. ' : 'El envío se suma en el siguiente paso. '}
+        También podés retirarlo en Don Torcuato.
+      </p>
+      <a href="/checkout" class="boton boton--ancho">Finalizar compra</a>
+    </div>
+  </aside>
+</div>
+
+<style>
+  .carrito {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+  }
+  .carrito[hidden] {
+    display: none;
+  }
+  .carrito__fondo {
+    position: absolute;
+    inset: 0;
+    background: rgb(42 31 25 / 0.4);
+    animation: aparecer 0.2s ease-out;
+  }
+  .carrito__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--papel);
+    box-shadow: -8px 0 32px rgb(42 31 25 / 0.15);
+    animation: entrar 0.25s ease-out;
+    outline: none;
+  }
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes entrar {
+    from {
+      transform: translateX(40px);
+      opacity: 0;
+    }
+  }
+  .carrito__cabeza {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--linea);
+  }
+  .carrito__cabeza h2 {
+    font-size: 1.5rem;
+  }
+  .carrito__cerrar {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--tinta);
+  }
+  .carrito__cerrar:hover {
+    background: var(--papel-2);
+  }
+  .carrito__cuerpo {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 20px;
+  }
+  .carrito__pie {
+    padding: 18px 20px 22px;
+    border-top: 1px solid var(--linea);
+    background: var(--blanco);
+  }
+  .carrito__pie[hidden] {
+    display: none;
+  }
+  .carrito__total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+  }
+  .carrito__nota {
+    font-size: 0.82rem;
+    color: var(--tinta-suave);
+    margin-bottom: 16px;
+  }
+  .carrito__cuerpo :global(.vacio) {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--tinta-suave);
+  }
+  .carrito__cuerpo :global(.vacio a) {
+    margin-top: 16px;
+  }
+</style>
+
+<script>
+  import { formatoPrecio, productoPorId } from '../data/tienda';
+  import { alCambiar, cambiarCantidad, cantidadTotal, leer, miniatura, resumen } from '../scripts/carrito';
+  import { lineaCarritoHTML } from '../scripts/lineas';
+
+  const raiz = document.querySelector<HTMLElement>('[data-carrito]')!;
+  const panel = raiz.querySelector<HTMLElement>('.carrito__panel')!;
+  const lista = raiz.querySelector<HTMLElement>('[data-lista]')!;
+  const pie = raiz.querySelector<HTMLElement>('[data-pie]')!;
+  const subtotal = raiz.querySelector<HTMLElement>('[data-subtotal]')!;
+  let volverA: HTMLElement | null = null;
+
+  function dibujar() {
+    const n = cantidadTotal();
+    document.querySelectorAll<HTMLElement>('[data-contador]').forEach((c) => {
+      c.textContent = String(n);
+      c.hidden = n === 0;
+    });
+
+    const r = resumen();
+    if (!r) {
+      lista.innerHTML = '<div class="vacio"><p>Todavía no agregaste nada.</p><a href="/#cuadernos" class="boton boton--claro" data-cerrar-carrito>Ver cuadernos</a></div>';
+      pie.hidden = true;
+      return;
+    }
+    const items = leer();
+    lista.innerHTML = r.lineas
+      .map((l, i) => lineaCarritoHTML(l, miniatura(l.producto), productoPorId(l.producto)?.nombre ?? '', i, items[i].cantidad))
+      .join('');
+    subtotal.textContent = formatoPrecio(r.subtotal);
+    pie.hidden = false;
+  }
+
+  function abrir() {
+    volverA = document.activeElement as HTMLElement | null;
+    raiz.hidden = false;
+    document.body.style.overflow = 'hidden';
+    panel.focus();
+  }
+  function cerrar() {
+    raiz.hidden = true;
+    document.body.style.overflow = '';
+    volverA?.focus();
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-abrir-carrito]')) abrir();
+    else if (t.closest('[data-cerrar-carrito]')) cerrar();
+    const btn = t.closest<HTMLElement>('[data-cant]');
+    if (btn && raiz.contains(btn)) {
+      const i = Number(btn.dataset.indice);
+      cambiarCantidad(i, leer()[i].cantidad + Number(btn.dataset.cant));
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !raiz.hidden) cerrar();
+  });
+  document.addEventListener('carrito:abrir', abrir);
+
+  alCambiar(dibujar);
+  dibujar();
+</script>

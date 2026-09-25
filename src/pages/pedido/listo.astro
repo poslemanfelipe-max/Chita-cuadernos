@@ -1,0 +1,79 @@
+---
+// Acá vuelve el cliente después de pagar en Mercado Pago.
+import Base from '../../layouts/Base.astro';
+---
+
+<Base titulo="Tu pedido" sinIndexar>
+  <div class="contenedor listo">
+    <div data-estado="cargando">
+      <span class="antetitulo">Pedido <span data-id></span></span>
+      <h1>Confirmando tu pago…</h1>
+      <p>Esto tarda unos segundos.</p>
+    </div>
+    <div data-estado="approved" hidden>
+      <span class="antetitulo">Pedido <span data-id></span></span>
+      <h1>¡Gracias por tu compra!</h1>
+      <p>Recibimos tu pago y ya empezamos a preparar tu pedido. Te mandamos un mail con el detalle.</p>
+      <a href="/" class="boton boton--claro">Volver al inicio</a>
+    </div>
+    <div data-estado="pending" hidden>
+      <span class="antetitulo">Pedido <span data-id></span></span>
+      <h1>Tu pago está en proceso</h1>
+      <p>Mercado Pago todavía no lo acreditó. Cuando se apruebe te llega un mail y empezamos a preparar tu pedido.</p>
+      <a href="/" class="boton boton--claro">Volver al inicio</a>
+    </div>
+    <div data-estado="error" hidden>
+      <h1>El pago no se completó</h1>
+      <p>No se hizo ningún cobro. Podés volver a intentarlo o elegir pagar por transferencia.</p>
+      <a href="/checkout" class="boton">Volver al carrito</a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .listo {
+    max-width: 640px;
+    padding-block: clamp(56px, 10vw, 120px);
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 18px;
+  }
+  p {
+    color: var(--tinta-suave);
+    font-size: 1.08rem;
+    margin-bottom: 28px;
+  }
+</style>
+
+<script>
+  import { vaciar } from '../../scripts/carrito';
+
+  const q = new URLSearchParams(location.search);
+  const pedido = q.get('pedido') ?? q.get('external_reference') ?? '';
+  const pago = q.get('payment_id') ?? q.get('collection_id') ?? '';
+  const estadoMP = q.get('status') ?? q.get('collection_status') ?? '';
+
+  document.querySelectorAll('[data-id]').forEach((e) => (e.textContent = pedido));
+
+  function mostrar(estado: 'approved' | 'pending' | 'error') {
+    document.querySelectorAll<HTMLElement>('[data-estado]').forEach((e) => (e.hidden = e.dataset.estado !== estado));
+    if (estado !== 'error') vaciar();
+  }
+
+  async function consultar() {
+    if (!pedido || !pago || pago === 'null') return mostrar(estadoMP === 'pending' || estadoMP === 'in_process' ? 'pending' : 'error');
+    try {
+      const r = await fetch(`/api/estado-pago?pedido=${encodeURIComponent(pedido)}&pago=${encodeURIComponent(pago)}`);
+      const { estado } = await r.json();
+      if (estado === 'approved') return mostrar('approved');
+      if (estado === 'pending' || estado === 'in_process' || estado === 'authorized') return mostrar('pending');
+      if (estado === 'desconocido' && estadoMP === 'approved') return mostrar('pending');
+      mostrar('error');
+    } catch {
+      // Sin conexión: confiamos en lo que dijo Mercado Pago al volver.
+      mostrar(estadoMP === 'approved' || estadoMP === 'pending' || estadoMP === 'in_process' ? 'pending' : 'error');
+    }
+  }
+  consultar();
+</script>

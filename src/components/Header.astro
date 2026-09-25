@@ -1,0 +1,93 @@
+---
+const enInicio = Astro.url.pathname === '/';
+const ir = (ancla: string) => (enInicio ? ancla : `/${ancla}`);
+---
+
+<header class="header">
+  <div class="contenedor header__fila">
+    <a href="/" class="marca" aria-label="Chita Cuadernos — inicio">chita<span>.</span></a>
+    <nav aria-label="Principal">
+      <a href={ir('#cuadernos')}>Cuadernos</a>
+      <a href={ir('#como-comprar')} class="ocultar-movil">Cómo comprar</a>
+      <a href={ir('#preguntas')} class="ocultar-movil">Preguntas</a>
+    </nav>
+    <button class="btn-carrito" type="button" data-abrir-carrito aria-label="Abrir carrito">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"></path>
+        <path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path>
+      </svg>
+      <span class="btn-carrito__num" data-contador hidden>0</span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgb(243 237 227 / 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgb(217 204 185 / 0.6);
+  }
+  .header__fila {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 68px;
+  }
+  .marca {
+    font: 400 1.9rem/1 var(--serif);
+    font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 144;
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .marca span {
+    color: var(--cuero);
+  }
+  nav {
+    display: flex;
+    gap: 28px;
+    margin-left: auto;
+    font-size: 0.93rem;
+  }
+  nav a {
+    text-decoration: none;
+  }
+  .btn-carrito {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--tinta);
+    cursor: pointer;
+  }
+  .btn-carrito:hover {
+    background: var(--papel-2);
+  }
+  .btn-carrito__num {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--cuero);
+    color: #fff;
+    font: 600 0.7rem/19px var(--sans);
+    text-align: center;
+  }
+  @media (max-width: 640px) {
+    .ocultar-movil {
+      display: none;
+    }
+    nav {
+      gap: 18px;
+    }
+  }
+</style>

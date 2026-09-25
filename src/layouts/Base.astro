@@ -1,0 +1,63 @@
+---
+import { getImage } from 'astro:assets';
+import { productos, tienda } from '../data/tienda';
+import { foto, fotosDeProducto } from '../lib/fotos';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Carrito from '../components/Carrito.astro';
+import '@fontsource-variable/fraunces/full.css';
+import '@fontsource-variable/inter/wght.css';
+import '../styles/global.css';
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  sinIndexar?: boolean;
+}
+const { titulo, descripcion = tienda.seo.descripcion, sinIndexar = false } = Astro.props;
+const tituloCompleto = titulo ? `${titulo} — ${tienda.nombreCompleto}` : tienda.seo.titulo;
+const url = new URL(Astro.url.pathname, tienda.url).href;
+
+const portada = foto('sitio/portada.jpg');
+const og = portada ? await getImage({ src: portada, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 80 }) : undefined;
+
+// Miniaturas para el carrito (que se dibuja en el navegador).
+const miniaturas: Record<string, string> = {};
+for (const p of productos) {
+  const f = fotosDeProducto(p.carpetaFotos)[0];
+  if (f) miniaturas[p.id] = (await getImage({ src: f, width: 160, height: 200, fit: 'cover', format: 'webp', quality: 70 })).src;
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={url} />
+    {sinIndexar && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#f3ede3" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content={tienda.nombreCompleto} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={url} />
+    {og && <meta property="og:image" content={new URL(og.src, tienda.url).href} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script type="application/json" id="miniaturas" set:html={JSON.stringify(miniaturas)} />
+  </head>
+  <body>
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+    <Header />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Footer />
+    <Carrito />
+  </body>
+</html>
