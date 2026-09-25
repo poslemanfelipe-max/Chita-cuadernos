@@ -146,7 +146,7 @@ export const tienda = {
   contacto: {
     instagram: 'chita.cuadernos',
     // Número con código de país, sin + ni espacios: 5491122334455. Vacío = no se muestra.
-    whatsapp: '',
+    whatsapp: '5491172498831',
     email: '', // mail público de contacto (opcional)
   },
 
