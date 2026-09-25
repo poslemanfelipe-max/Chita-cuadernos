@@ -89,7 +89,7 @@ export const tienda = {
   marca: 'Chita',
   nombreCompleto: 'Chita Cuadernos',
   // Cuando haya dominio propio, cambiarlo acá (sin barra al final).
-  url: 'https://fluffy-chimera-d3c662.netlify.app',
+  url: 'https://chita-cuadernos.netlify.app',
 
   seo: {
     titulo: 'Chita Cuadernos — cuadernos de cuero hechos a mano',
@@ -98,6 +98,7 @@ export const tienda = {
   },
 
   portada: {
+    lema: 'lo que se escribe a mano, permanece',
     titulo: 'Cuadernos de cuero,\nhechos a mano.',
     texto: 'Cada Chita se corta, se cose y se arma a mano. Elegí el tuyo y lo preparamos para vos.',
   },

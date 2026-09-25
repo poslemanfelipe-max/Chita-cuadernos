@@ -51,10 +51,6 @@ const otros = productos.filter((o) => o.id !== p.id);
       <div class="ficha__info">
         <h1>{p.nombre}</h1>
         <p class="ficha__precio" data-precio>{formatoPrecio(v0.precio)}</p>
-        {p.descripcion.map((d) => <p class="ficha__desc">{d}</p>)}
-        <ul class="ficha__detalles">
-          {p.detalles.map((d) => <li>{d}</li>)}
-        </ul>
 
         <form class="compra" data-compra data-producto={p.id} novalidate>
           {
@@ -117,8 +113,26 @@ const otros = productos.filter((o) => o.id !== p.id);
         </form>
 
         <div class="ficha__entrega">
-          <p><strong>{tienda.entrega.envio.titulo}.</strong> {tienda.entrega.envio.texto}</p>
-          <p><strong>{tienda.entrega.retiro.titulo}.</strong> {tienda.entrega.retiro.texto}</p>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"></path>
+            <circle cx="7" cy="17.5" r="1.6"></circle>
+            <circle cx="17" cy="17.5" r="1.6"></circle>
+          </svg>
+          <div>
+            <p>
+              <strong>{tienda.entrega.envio.titulo}</strong>
+              {tienda.entrega.envio.costo === null ? ' — a coordinar' : ` — ${formatoPrecio(tienda.entrega.envio.costo)}`}
+            </p>
+            <p><strong>{tienda.entrega.retiro.titulo}</strong> — sin cargo</p>
+          </div>
+        </div>
+
+        <div class="ficha__texto">
+          <h2 class="antetitulo">Sobre este cuaderno</h2>
+          {p.descripcion.map((d) => <p class="ficha__desc">{d}</p>)}
+          <ul class="ficha__detalles">
+            {p.detalles.map((d) => <li>{d}</li>)}
+          </ul>
         </div>
       </div>
     </div>
@@ -179,7 +193,7 @@ const otros = productos.filter((o) => o.id !== p.id);
     width: 100%;
     aspect-ratio: 4 / 5;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 3px;
     background: var(--papel-2);
   }
   .galeria__principal :global(img[hidden]) {
@@ -193,14 +207,14 @@ const otros = productos.filter((o) => o.id !== p.id);
   .galeria__miniaturas button {
     padding: 0;
     border: 2px solid transparent;
-    border-radius: 6px;
+    border-radius: 3px;
     background: none;
     cursor: pointer;
     overflow: hidden;
     width: 72px;
   }
   .galeria__miniaturas button[aria-pressed='true'] {
-    border-color: var(--tinta);
+    border-color: var(--vino);
   }
   .galeria__miniaturas :global(img) {
     width: 100%;
@@ -209,17 +223,24 @@ const otros = productos.filter((o) => o.id !== p.id);
   }
 
   .ficha__info h1 {
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
   }
   .ficha__precio {
-    font-size: 1.35rem;
-    margin: 10px 0 24px;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--tinta);
+    margin: 12px 0 28px;
+  }
+  .ficha__texto {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--arena);
   }
   .ficha__desc {
     color: var(--tinta-suave);
   }
   .ficha__detalles {
-    margin: 20px 0 32px;
+    margin: 20px 0 0;
     padding: 0;
     list-style: none;
     display: grid;
@@ -240,8 +261,6 @@ const otros = productos.filter((o) => o.id !== p.id);
   .compra {
     display: grid;
     gap: 22px;
-    padding-top: 28px;
-    border-top: 1px solid var(--linea);
   }
   fieldset {
     border: 0;
@@ -267,10 +286,11 @@ const otros = productos.filter((o) => o.id !== p.id);
   .compra__fila {
     display: flex;
     gap: 12px;
-    align-items: center;
+    align-items: stretch;
   }
   .compra__fila .cantidad {
-    min-height: 50px;
+    min-height: 52px;
+    border-radius: 4px;
   }
   .compra__boton {
     flex: 1;
@@ -282,19 +302,26 @@ const otros = productos.filter((o) => o.id !== p.id);
     font-size: 0.9rem;
   }
   .ficha__entrega {
-    margin-top: 12px;
+    display: flex;
+    gap: 14px;
+    margin-top: 8px;
     padding: 18px 20px;
-    border-radius: var(--radio);
+    border-radius: 4px;
     background: var(--papel-2);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--tinta-suave);
+  }
+  .ficha__entrega svg {
+    flex: none;
+    color: var(--vino);
+    margin-top: 2px;
   }
   .ficha__entrega strong {
     color: var(--tinta);
     font-weight: 500;
   }
-  .ficha__entrega p:last-child {
-    margin: 0;
+  .ficha__entrega p {
+    margin: 0 0 4px;
   }
 
   .otros {
@@ -321,7 +348,7 @@ const otros = productos.filter((o) => o.id !== p.id);
     width: 100%;
     aspect-ratio: 4 / 5;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 3px;
   }
 </style>
 

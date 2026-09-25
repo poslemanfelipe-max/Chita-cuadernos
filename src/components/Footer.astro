@@ -1,57 +1,91 @@
 ---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo-chita-crema.png';
 import { tienda } from '../data/tienda';
 const { instagram, whatsapp, email } = tienda.contacto;
 ---
 
 <footer class="footer">
   <div class="contenedor footer__fila">
-    <div>
-      <p class="footer__marca">chita<span>.</span>cuadernos</p>
-      <p class="footer__texto">Cuadernos de cuero hechos a mano en Don Torcuato, Buenos Aires.</p>
+    <div class="footer__marca">
+      <Image src={logo} alt="Chita" height={180} densities={[1, 2]} />
+      <p class="cursiva">lo que se escribe a mano, permanece</p>
     </div>
-    <ul>
-      {instagram && (
-        <li>
-          <a href={`https://www.instagram.com/${instagram}/`} target="_blank" rel="noopener">Instagram @{instagram}</a>
-        </li>
-      )}
-      {whatsapp && (
-        <li>
-          <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
-        </li>
-      )}
-      {email && (
-        <li>
-          <a href={`mailto:${email}`}>{email}</a>
-        </li>
-      )}
-    </ul>
+    <div>
+      <p class="footer__titulo">Contacto</p>
+      <ul>
+        {
+          whatsapp && (
+            <li>
+              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
+            </li>
+          )
+        }
+        {
+          instagram && (
+            <li>
+              <a href={`https://www.instagram.com/${instagram}/`} target="_blank" rel="noopener">Instagram @{instagram}</a>
+            </li>
+          )
+        }
+        {
+          email && (
+            <li>
+              <a href={`mailto:${email}`}>{email}</a>
+            </li>
+          )
+        }
+      </ul>
+    </div>
+    <div>
+      <p class="footer__titulo">Entregas</p>
+      <ul>
+        <li>Envíos a todo el país por Correo Argentino</li>
+        <li>Retiro en Don Torcuato, Buenos Aires</li>
+      </ul>
+    </div>
   </div>
-  <div class="contenedor footer__legal">© {new Date().getFullYear()} {tienda.nombreCompleto}</div>
+  <div class="contenedor footer__legal">
+    <span>© {new Date().getFullYear()} {tienda.nombreCompleto}</span>
+    <span>Hecho a mano — Buenos Aires</span>
+  </div>
 </footer>
 
 <style>
   .footer {
-    background: var(--tinta);
-    color: #e9e0d3;
-    padding-block: 56px 28px;
+    background: var(--vino);
+    color: #e6dbc6;
+    padding-block: 64px 28px;
   }
   .footer__fila {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 32px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 40px;
   }
-  .footer__marca {
-    font: 400 1.7rem/1 var(--serif);
-    margin-bottom: 12px;
+  @media (max-width: 760px) {
+    .footer__fila {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .footer__marca :global(img) {
+      margin-inline: auto;
+    }
   }
-  .footer__marca span {
-    color: #c98a6c;
+  .footer__marca :global(img) {
+    height: 110px;
+    width: auto;
+    margin-bottom: 16px;
   }
-  .footer__texto {
-    color: #b7a998;
-    max-width: 34ch;
+  .footer__marca p {
+    color: var(--arena);
+    font-size: 1.15rem;
+  }
+  .footer__titulo {
+    font: 400 0.72rem/1 var(--mono);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--arena);
+    margin-bottom: 16px;
   }
   ul {
     list-style: none;
@@ -59,15 +93,28 @@ const { instagram, whatsapp, email } = tienda.contacto;
     padding: 0;
     display: grid;
     gap: 10px;
+    font-size: 0.95rem;
   }
   a:hover {
     color: #fff;
   }
   .footer__legal {
-    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 48px;
     padding-top: 20px;
-    border-top: 1px solid #4a3c33;
-    color: #8f8173;
-    font-size: 0.82rem;
+    border-top: 1px solid rgb(201 185 154 / 0.25);
+    color: var(--arena);
+    font: 400 0.7rem/1.4 var(--mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 760px) {
+    .footer__legal {
+      justify-content: center;
+      text-align: center;
+    }
   }
 </style>

@@ -5,8 +5,10 @@ import { foto, fotosDeProducto } from '../lib/fotos';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Carrito from '../components/Carrito.astro';
+import WhatsApp from '../components/WhatsApp.astro';
 import '@fontsource-variable/fraunces/full.css';
 import '@fontsource-variable/inter/wght.css';
+import '@fontsource/space-mono/400.css';
 import '../styles/global.css';
 
 interface Props {
@@ -38,8 +40,9 @@ for (const p of productos) {
     <meta name="description" content={descripcion} />
     <link rel="canonical" href={url} />
     {sinIndexar && <meta name="robots" content="noindex" />}
-    <meta name="theme-color" content="#f3ede3" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#efe7d6" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_AR" />
     <meta property="og:site_name" content={tienda.nombreCompleto} />
@@ -59,5 +62,6 @@ for (const p of productos) {
     </main>
     <Footer />
     <Carrito />
+    <WhatsApp />
   </body>
 </html>
