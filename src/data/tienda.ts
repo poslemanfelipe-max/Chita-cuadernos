@@ -32,13 +32,13 @@ export const productos: Producto[] = [
       'El modelo Chita Origen es el punto de partida de todo. Un cuaderno simple, hecho a mano: sus materiales y formas buscan ser cálidos y agradables, dejando que el trabajo artesanal se vea en cada detalle.',
       'El sistema de cierre con hilo y botón acompaña de manera sutil, aportando practicidad y autenticidad.',
     ],
-    detalles: ['Hecho a mano', 'Cierre con hilo y botón', 'Dos tamaños: 80 o 120 hojas'],
+    detalles: ['Hecho a mano', 'Cierre con hilo y botón', 'Dos tamaños: 80 o 120 hojas', 'Cinco colores para elegir'],
     carpetaFotos: 'origen',
     variantes: [
       { id: '80', nombre: '80 hojas', precio: 30000 },
       { id: '120', nombre: '120 hojas', precio: 38000 },
     ],
-    colores: [],
+    colores: ['Rosa', 'Suela', 'Arena', 'Verde', 'Topo'],
     grabado: true,
   },
   {
@@ -76,11 +76,20 @@ export const productos: Producto[] = [
   },
 ];
 
+// Tono aproximado de cada color, para la muestrita al lado del nombre.
+export const tonos: Record<string, string> = {
+  Rosa: '#c98f8c',
+  Suela: '#8b5330',
+  Arena: '#cbb9a6',
+  Verde: '#4d5039',
+  Topo: '#b3a18f',
+};
+
 export const tienda = {
   marca: 'Chita',
   nombreCompleto: 'Chita Cuadernos',
   // Cuando haya dominio propio, cambiarlo acá (sin barra al final).
-  url: 'https://chita-cuadernos.netlify.app',
+  url: 'https://fluffy-chimera-d3c662.netlify.app',
 
   seo: {
     titulo: 'Chita Cuadernos — cuadernos de cuero hechos a mano',
@@ -95,7 +104,7 @@ export const tienda = {
 
   // Grabado personalizado (nombre, iniciales, una fecha...).
   grabado: {
-    precio: 0, // costo extra por cuaderno. 0 = sin cargo
+    precio: 15000, // costo extra por cuaderno. 0 = sin cargo
     maxCaracteres: 20,
     ayuda: 'Nombre, iniciales o una palabra corta.',
   },
@@ -104,8 +113,8 @@ export const tienda = {
     envio: {
       titulo: 'Envío por Correo Argentino',
       // Costo fijo del envío. null = no se cobra en la web y se coordina aparte.
-      costo: null as number | null,
-      texto: 'Enviamos a todo el país por Correo Argentino.',
+      costo: 10000 as number | null,
+      texto: 'Enviamos a todo el país por Correo Argentino, a domicilio.',
       textoSinCosto: 'El costo del envío se coordina después de la compra, según el destino.',
     },
     retiro: {
@@ -125,9 +134,9 @@ export const tienda = {
       titulo: 'Transferencia bancaria',
       texto: 'Te mostramos los datos al confirmar el pedido.',
       // ⚠️ Completar con los datos reales antes de publicar.
-      alias: 'COMPLETAR.ALIAS',
-      cbu: '',
-      titular: 'COMPLETAR TITULAR',
+      alias: 'Chita.cuadernos',
+      cvu: '0000003100099598748463', // CBU o CVU. Vacío = no se muestra
+      titular: 'Paz Coulter',
       // Cuántas horas tiene el cliente para transferir antes de que el pedido se libere.
       plazoHoras: 48,
     },
@@ -143,12 +152,8 @@ export const tienda = {
   // Preguntas frecuentes que aparecen al final de la página de inicio.
   preguntas: [
     {
-      p: '¿Cuánto tarda mi pedido?',
-      r: 'Cada cuaderno se hace a mano. Apenas confirmamos el pago te avisamos por mail cuándo va a estar listo.',
-    },
-    {
       p: '¿Cómo funciona el grabado?',
-      r: 'Al agregar el cuaderno al carrito podés escribir el texto que querés grabar en la tapa. Si lo dejás vacío, va sin grabado.',
+      r: 'Al agregar el cuaderno al carrito podés escribir el texto que querés grabar en la tapa (tiene un costo extra por cuaderno). Si lo dejás vacío, va sin grabado.',
     },
     {
       p: '¿Puedo cambiar los cuadernillos del Nómade?',

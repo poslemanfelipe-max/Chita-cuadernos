@@ -6,7 +6,17 @@ export interface Pedido {
   cliente: { nombre: string; email: string; telefono: string };
   entrega: {
     metodo: MetodoEntrega;
-    direccion?: { calle: string; ciudad: string; provincia: string; cp: string };
+    // Los datos que pide Correo Argentino para un envío a domicilio.
+    direccion?: {
+      dni: string;
+      calle: string;
+      numero: string;
+      pisoDepto: string;
+      ciudad: string;
+      provincia: string;
+      cp: string;
+      referencias: string;
+    };
   };
   comentario: string;
   pago: {

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { formatoPrecio, tienda } from '../data/tienda';
+import { PROVINCIAS } from '../lib/pedido';
 
 const { envio, retiro } = tienda.entrega;
 const { mercadoPago, transferencia } = tienda.pago;
@@ -54,23 +55,45 @@ const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
           </label>
 
           <div class="direccion" data-direccion>
+            <p class="direccion__ayuda">Estos son los datos que pide Correo Argentino. El paquete va a nombre de quien hace la compra.</p>
             <div class="campo">
-              <label for="calle">Calle, número, piso y depto.</label>
-              <input id="calle" name="calle" type="text" autocomplete="street-address" required maxlength="120" />
+              <label for="dni">DNI</label>
+              <input id="dni" name="dni" type="text" inputmode="numeric" data-req maxlength="12" placeholder="Sin puntos" />
+            </div>
+            <div class="calle">
+              <div class="campo">
+                <label for="calle">Calle</label>
+                <input id="calle" name="calle" type="text" autocomplete="address-line1" data-req maxlength="100" />
+              </div>
+              <div class="campo">
+                <label for="numero">Número</label>
+                <input id="numero" name="numero" type="text" data-req maxlength="10" />
+              </div>
+              <div class="campo">
+                <label for="pisoDepto">Piso / depto <span class="opcional">(opc.)</span></label>
+                <input id="pisoDepto" name="pisoDepto" type="text" autocomplete="address-line2" maxlength="20" />
+              </div>
             </div>
             <div class="tres">
               <div class="campo">
                 <label for="ciudad">Localidad</label>
-                <input id="ciudad" name="ciudad" type="text" autocomplete="address-level2" required maxlength="80" />
+                <input id="ciudad" name="ciudad" type="text" autocomplete="address-level2" data-req maxlength="80" />
               </div>
               <div class="campo">
                 <label for="provincia">Provincia</label>
-                <input id="provincia" name="provincia" type="text" autocomplete="address-level1" required maxlength="60" />
+                <select id="provincia" name="provincia" autocomplete="address-level1" data-req>
+                  <option value="">Elegí…</option>
+                  {PROVINCIAS.map((pr) => <option value={pr}>{pr}</option>)}
+                </select>
               </div>
               <div class="campo">
                 <label for="cp">Código postal</label>
-                <input id="cp" name="cp" type="text" autocomplete="postal-code" inputmode="numeric" required maxlength="10" />
+                <input id="cp" name="cp" type="text" autocomplete="postal-code" data-req maxlength="10" />
               </div>
+            </div>
+            <div class="campo">
+              <label for="referencias">Entre calles o referencias <span class="opcional">(opcional)</span></label>
+              <input id="referencias" name="referencias" type="text" maxlength="150" placeholder="Ej: entre Av. Libertador y Paraná, portón verde" />
             </div>
           </div>
         </fieldset>
@@ -130,7 +153,7 @@ const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
       <p>Para confirmarlo, transferí <strong data-listo-total></strong> dentro de las próximas {transferencia.plazoHoras} horas:</p>
       <dl class="datos-transferencia">
         <div><dt>Alias</dt><dd>{transferencia.alias}</dd></div>
-        {transferencia.cbu && <div><dt>CBU</dt><dd>{transferencia.cbu}</dd></div>}
+        {transferencia.cvu && <div><dt>CVU</dt><dd>{transferencia.cvu}</dd></div>}
         <div><dt>Titular</dt><dd>{transferencia.titular}</dd></div>
       </dl>
       <p>Te mandamos estos datos por mail. Respondé ese mail con el comprobante y empezamos a preparar tu pedido.</p>
@@ -203,6 +226,27 @@ const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
     display: grid;
     gap: 14px;
     margin-top: 6px;
+  }
+  .direccion__ayuda {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--tinta-suave);
+  }
+  .calle {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 560px) {
+    .calle {
+      grid-template-columns: 1fr 1fr;
+    }
+    .calle .campo:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+  .campo :global(select[aria-invalid='true']) {
+    border-color: var(--error);
   }
   .opcional {
     color: var(--tinta-suave);
@@ -312,7 +356,7 @@ const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
 
     const conEnvio = entrega() === 'envio';
     direccion.hidden = !conEnvio;
-    direccion.querySelectorAll('input').forEach((i) => (i.required = conEnvio));
+    direccion.querySelectorAll<HTMLInputElement>('[data-req]').forEach((i) => (i.required = conEnvio));
     enviar.textContent = pago() === 'mercadopago' ? `Pagar ${formatoPrecio(r.total)} con Mercado Pago` : 'Confirmar pedido';
   }
 
@@ -323,8 +367,12 @@ const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
 
   function validar(): boolean {
     let primero: HTMLInputElement | null = null;
-    form.querySelectorAll<HTMLInputElement>('input[required]').forEach((i) => {
-      const mal = !i.value.trim() || (i.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(i.value.trim()));
+    form.querySelectorAll<HTMLInputElement>('input[required], select[required]').forEach((i) => {
+      const v = i.value.trim();
+      const mal =
+        !v ||
+        (i.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ||
+        (i.name === 'dni' && !/^\d{7,8}$/.test(v.replace(/\D/g, '')));
       i.setAttribute('aria-invalid', String(mal));
       if (mal && !primero) primero = i;
     });
@@ -354,7 +402,19 @@ const pagoInicial = mercadoPago.activo ? 'mercadopago' : 'transferencia';
       cliente: { nombre: s('nombre'), email: s('email'), telefono: s('telefono') },
       entrega: {
         metodo: entrega(),
-        direccion: entrega() === 'envio' ? { calle: s('calle'), ciudad: s('ciudad'), provincia: s('provincia'), cp: s('cp') } : undefined,
+        direccion:
+          entrega() === 'envio'
+            ? {
+                dni: s('dni'),
+                calle: s('calle'),
+                numero: s('numero'),
+                pisoDepto: s('pisoDepto'),
+                ciudad: s('ciudad'),
+                provincia: s('provincia'),
+                cp: s('cp'),
+                referencias: s('referencias'),
+              }
+            : undefined,
       },
       pago: pago(),
       comentario: s('comentario'),

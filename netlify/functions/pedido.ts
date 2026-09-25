@@ -4,7 +4,7 @@
 import type { Config } from '@netlify/functions';
 import { randomInt } from 'node:crypto';
 import { tienda } from '../../src/data/tienda';
-import { calcular, limpiarTexto, type MetodoEntrega, type MetodoPago } from '../../src/lib/pedido';
+import { calcular, limpiarTexto, PROVINCIAS, type MetodoEntrega, type MetodoPago } from '../../src/lib/pedido';
 import { guardarPedido } from '../lib/almacen';
 import { avisarNuevoPedido, confirmarAlCliente } from '../lib/mail';
 import { crearPreferencia } from '../lib/mercadopago';
@@ -32,14 +32,20 @@ function leer(body: Record<string, any>): Omit<Pedido, 'id' | 'fecha' | 'calculo
   if (metodoEntrega === 'envio') {
     const d = body.entrega?.direccion ?? {};
     direccion = {
-      calle: limpiarTexto(d.calle, 120),
+      dni: limpiarTexto(d.dni, 12).replace(/\D/g, ''),
+      calle: limpiarTexto(d.calle, 100),
+      numero: limpiarTexto(d.numero, 10),
+      pisoDepto: limpiarTexto(d.pisoDepto, 20),
       ciudad: limpiarTexto(d.ciudad, 80),
-      provincia: limpiarTexto(d.provincia, 60),
-      cp: limpiarTexto(d.cp, 10),
+      provincia: limpiarTexto(d.provincia, 40),
+      cp: limpiarTexto(d.cp, 10).toUpperCase(),
+      referencias: limpiarTexto(d.referencias, 150),
     };
-    if (!direccion.calle || !direccion.ciudad || !direccion.provincia || !direccion.cp) {
+    if (!direccion.calle || !direccion.numero || !direccion.ciudad || !direccion.cp) {
       throw new Error('Completá la dirección de envío.');
     }
+    if (!PROVINCIAS.includes(direccion.provincia)) throw new Error('Elegí la provincia.');
+    if (direccion.dni.length < 7 || direccion.dni.length > 8) throw new Error('Revisá el DNI.');
   }
 
   const metodoPago = body.pago as MetodoPago;

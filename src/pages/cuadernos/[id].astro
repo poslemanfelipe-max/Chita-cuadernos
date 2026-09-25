@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
-import { formatoPrecio, productos, tienda, type Producto } from '../../data/tienda';
+import { formatoPrecio, productos, tienda, tonos, type Producto } from '../../data/tienda';
 import { fotosDeProducto } from '../../lib/fotos';
 
 export function getStaticPaths() {
@@ -82,7 +82,10 @@ const otros = productos.filter((o) => o.id !== p.id);
                   {p.colores.map((c, i) => (
                     <label class="pastilla">
                       <input type="radio" name="color" value={c} checked={i === 0} />
-                      <span>{c}</span>
+                      <span>
+                        {tonos[c] && <i class="muestra" style={`background:${tonos[c]}`} />}
+                        {c}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -246,6 +249,16 @@ const otros = productos.filter((o) => o.id !== p.id);
     padding: 0;
     display: grid;
     gap: 10px;
+  }
+  .muestra {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  }
+  .pastilla input:checked + span .muestra {
+    box-shadow: 0 0 0 2px var(--blanco);
   }
   .opcional {
     color: var(--tinta-suave);

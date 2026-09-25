@@ -59,8 +59,24 @@ function tablaProductos(p: Pedido): { html: string; texto: string } {
 function datosEntrega(p: Pedido): string[] {
   if (p.entrega.metodo === 'retiro') return [`Entrega: ${tienda.entrega.retiro.titulo}`];
   const d = p.entrega.direccion!;
-  return [`Entrega: ${tienda.entrega.envio.titulo}`, `Dirección: ${d.calle}, ${d.ciudad}, ${d.provincia} (CP ${d.cp})`];
+  return [
+    `Entrega: ${tienda.entrega.envio.titulo}`,
+    '— Datos para Correo Argentino —',
+    `Destinatario: ${p.cliente.nombre}`,
+    `DNI: ${d.dni}`,
+    `Calle y número: ${d.calle} ${d.numero}`,
+    ...(d.pisoDepto ? [`Piso / depto: ${d.pisoDepto}`] : []),
+    `Localidad: ${d.ciudad}`,
+    `Provincia: ${d.provincia}`,
+    `Código postal: ${d.cp}`,
+    ...(d.referencias ? [`Referencias: ${d.referencias}`] : []),
+  ];
 }
+
+const direccionCorta = (p: Pedido) => {
+  const d = p.entrega.direccion!;
+  return `${d.calle} ${d.numero}${d.pisoDepto ? ` ${d.pisoDepto}` : ''}, ${d.ciudad}, ${d.provincia} (CP ${d.cp})`;
+};
 
 const estadoPago = (p: Pedido) =>
   p.pago.metodo === 'mercadopago'
@@ -101,11 +117,11 @@ export async function confirmarAlCliente(p: Pedido) {
   const intro = pendiente
     ? `¡Gracias por tu pedido! Para confirmarlo, transferí ${formatoPrecio(p.calculo.total)} dentro de las próximas ${tr.plazoHoras} horas y respondé este mail con el comprobante.`
     : '¡Gracias por tu compra! Recibimos tu pago y ya empezamos a preparar tu pedido.';
-  const datosTr = [`Alias: ${tr.alias}`, ...(tr.cbu ? [`CBU: ${tr.cbu}`] : []), `Titular: ${tr.titular}`, `Monto: ${formatoPrecio(p.calculo.total)}`];
+  const datosTr = [`Alias: ${tr.alias}`, ...(tr.cvu ? [`CVU: ${tr.cvu}`] : []), `Titular: ${tr.titular}`, `Monto: ${formatoPrecio(p.calculo.total)}`];
   const entrega =
     p.entrega.metodo === 'retiro'
       ? `Retiro: ${tienda.entrega.retiro.texto}`
-      : `Envío a: ${p.entrega.direccion!.calle}, ${p.entrega.direccion!.ciudad}.${p.calculo.envio === null ? ' ' + tienda.entrega.envio.textoSinCosto : ''}`;
+      : `Envío por Correo Argentino a: ${direccionCorta(p)}.${p.calculo.envio === null ? ' ' + tienda.entrega.envio.textoSinCosto : ''}`;
 
   const html = `<div style="font:15px/1.5 Arial,sans-serif;color:#2b211b;max-width:560px">
 <h2 style="margin:0 0 8px">Hola ${esc(p.cliente.nombre.split(' ')[0])}</h2>
